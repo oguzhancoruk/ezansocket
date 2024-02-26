@@ -10,7 +10,7 @@ const wss = new WebSocket.Server({ server });
 async function getSpecificRow() {
   const currentDate = new Date();
   const formattedDate = `${currentDate.getDate()} ${getMonthName(currentDate.getMonth())} ${currentDate.getFullYear()}`;
-  const path = '/Users/oguzhancoruk/Desktop/vemlo tv/assets/ezan_sehir/İstanbul.xlsx';
+  const path = './İstanbul.xlsx'; // Specify the file's directory
 
   try {
     const rows = await readXlsxFile(path);
