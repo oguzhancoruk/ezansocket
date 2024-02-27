@@ -9,11 +9,15 @@
 
   async function getSpecificRow() {
     const currentDate = new Date();
-    const formattedDate = `${currentDate.getDate()} ${getMonthName(currentDate.getMonth())} ${currentDate.getFullYear()}`;
+    const formattedDate = currentDate.toLocaleString('tr-TR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
     const path = './İstanbul.xlsx'; // Specify the file's directory
     const saat = currentDate.getHours().toString().padStart(2, '0'); // Saati alırken 2 basamaklı olacak şekilde düzenler
     const dakika = currentDate.getMinutes().toString().padStart(2, '0'); // Dakikayı alırken 2 basamaklı olacak şekilde düzenler
-    const sonuc = `${saat}:${dakika}`;
+    const tarihVeSaat = `${formattedDate} ${saat}:${dakika}`; // Türkiye'nin yerel tarihini ve saatini içeren bir dizgi oluşturuyoruz
     try {
       const rows = await readXlsxFile(path);
       const specificRows = rows.filter(row => row[0].includes(formattedDate));
@@ -35,12 +39,13 @@
         }));
       }).flat();
   
-      return { sunuc: sonuc, data: result }; // Burada sunuc keyini ekledik
+      return { sunuc: tarihVeSaat, data: result }; // Burada sunuc keyini ekledik
     } catch (error) {
       console.error(error);
       throw error;
     }
   }
+  
   
 
   function getMonthName(monthIndex) {
