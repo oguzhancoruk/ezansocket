@@ -26,7 +26,14 @@ async function getSpecificRow() {
       "Yatsı": row[5]
     }));
 
-    return allDayDictionaries;
+    const result = allDayDictionaries.map(item => {
+      return Object.keys(item).map(vakit => ({
+        saat: item[vakit],
+        vakit: vakit
+      }));
+    }).flat();
+
+    return result;
   } catch (error) {
     console.error(error);
     throw error;
@@ -52,7 +59,7 @@ wss.on('connection', (ws) => {
     if (ws.readyState === WebSocket.OPEN) {
       try {
         const data = await getSpecificRow();
-        ws.send(JSON.stringify(data));
+        ws.send(JSON.stringify({ success: true, result: data }));
       } catch (error) {
         console.error("Veri alınamadı:", error);
       }
