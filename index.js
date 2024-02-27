@@ -10,7 +10,8 @@ const wss = new WebSocket.Server({ server });
 async function getSpecificRow() {
   const currentDate = new Date();
   // Tarih ve saat bilgisini İstanbul'a göre formatlıyoruz
-  const istanbulDate = new Date(currentDate.toLocaleString("en-US", {timeZone: "Europe/Istanbul"}));
+  const istanbulDate = new Date(currentDate.toUTCString() );
+  istanbulDate.setHours(utcDate.getHours() + 3);
   const formattedDate = `${istanbulDate.getDate()} ${getMonthName(istanbulDate.getMonth())} ${istanbulDate.getFullYear()}`;
   const saat = istanbulDate.getHours().toString().padStart(2, '0');
   const dakika = istanbulDate.getMinutes().toString().padStart(2, '0');
