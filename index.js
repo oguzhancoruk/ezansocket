@@ -37,7 +37,7 @@ async function getSpecificRow() {
       }));
     }).flat();
 
-    return { sunuc: "06:11", data: result }; 
+    return { sunuc: "06:10", data: result }; 
   } catch (error) {
     console.error(error);
     throw error;
