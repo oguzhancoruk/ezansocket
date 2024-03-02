@@ -6,45 +6,76 @@ const readXlsxFile = require('read-excel-file/node');
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+const data = require("./data/istanbul.json")
 
-async function getSpecificRow() {
+
+
+
+
+
+function ezandurum() {
+  const vakitler = ["İmsak", "Güneş", "Öğle", 'İkindi', 'Akşam', "Yatsı"]
   const currentDate = new Date();
-  // Tarih ve saat bilgisini İstanbul'a göre formatlıyoruz
-  const istanbulDate = new Date(currentDate.toUTCString() );
-  istanbulDate.setHours(istanbulDate.getHours() + 3);
-  const formattedDate = `${istanbulDate.getDate()} ${getMonthName(istanbulDate.getMonth())} ${istanbulDate.getFullYear()}`;
-  const saat = istanbulDate.getHours().toString().padStart(2, '0');
-  const dakika = istanbulDate.getMinutes().toString().padStart(2, '0');
-  const sonuc = `${saat}:${dakika}`;
-  try {
-    const rows = await readXlsxFile('./İstanbul.xlsx');
-    const specificRows = rows.filter(row => row[0].includes(formattedDate));
-    const remainingRows = specificRows.map(row => row.slice(2));
+  const istanbulDate = new Date(currentDate.toUTCString());
+  const formattedDate = `${formatTwoDigitNumber(istanbulDate.getDate())} ${getMonthName(istanbulDate.getMonth())} ${istanbulDate.getFullYear()}`;
+  istanbulDate.setHours(istanbulDate.getHours() );
+  // const formattedDate = `${istanbulDate.getDate()} ${getMonthName(istanbulDate.getMonth())} ${istanbulDate.getFullYear()}`;
+  const saat = istanbulDate.getHours();
+  const dakika = istanbulDate.getMinutes();
+  let ezandurum = [];
+  data.map(res => {
 
-    const allDayDictionaries = remainingRows.map(row => ({
-      "İmsak": row[0],
-      "Güneş": row[1],
-      "Öğle": row[2],
-      "İkindi": row[3],
-      "Akşam": row[4],
-      "Yatsı": row[5]
-    }));
+    if (formattedDate === res.Tarih) {
+      let ezanDurumListesi = []; // Her bir ezan zamanı için durum listesi oluşturuluyor
+      vakitler.map(res1 => {
+        var parts = res[res1].split(":");
+        var liveHours = parseInt(parts[0], 10);
+        var liveMinutes = parseInt(parts[1], 10)
+        var liveTotalMinutes = liveHours * 60 + liveMinutes;
+        var currentTotalMinutes = saat * 60 + dakika;
+        var difference = (currentTotalMinutes-liveTotalMinutes);
+     /*    console.log("a1",liveTotalMinutes)
+        console.log("b1",currentTotalMinutes)
+        console.log("dif",difference) */
+        console.log("live",liveHours+":"+liveMinutes)
+        console.log("current",saat+":"+dakika)
+        console.log("DİF",difference )
+        if (difference >= 0 && difference <= 10) {
+          
+         // console.log(difference, "Ezan Okunuyor");
+          ezanDurumListesi.push("Ezan Okunuyor"); // Ezan okunuyorsa listeye ekleniyor
+        }
+        else {
+          if (difference > 11) {
+            ezanDurumListesi.push("Ezan Okundu"); // Ezan okunmadıysa listeye ekleniyor
+            //console.log(difference, "Ezan Okundu");
+          }
+        }
+      });
+      ezandurum.push(ezanDurumListesi); // Her bir vakit için ezan durumu listesi ana diziye ekleniyor
+    }
+  });
 
-    const result = allDayDictionaries.map(item => {
-      return Object.keys(item).map(vakit => ({
-        saat: item[vakit],
-        vakit: vakit
-      }));
-    }).flat();
+  // Tüm ezan durumlarını kontrol ederek genel durumu belirleme
+  let genelEzanDurumu = "Ezan Okundu";
 
-    return { sunuc: "06:07", data: result }; 
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+  ezandurum.forEach(durumListesi => {
+    if (durumListesi.some(durum => durum === "Ezan Okunuyor")) {
+      genelEzanDurumu = "Ezan Okunuyor";
+    }
+  });
+
+  return genelEzanDurumu
 }
 
-// Ayları getiren fonksiyon
+
+
+function formatTwoDigitNumber(number) {
+  return number < 10 ? '0' + number : number;
+}
+
+
+
 function getMonthName(monthIndex) {
   const months = [
     "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
@@ -52,7 +83,6 @@ function getMonthName(monthIndex) {
   ];
   return months[monthIndex];
 }
-
 wss.on('connection', (ws) => {
   console.log('Yeni bir bağlantı kuruldu.');
 
@@ -61,15 +91,20 @@ wss.on('connection', (ws) => {
   });
 
   const interval = setInterval(async () => {
+
+
+
+
+
     if (ws.readyState === WebSocket.OPEN) {
       try {
-        const data = await getSpecificRow();
-        ws.send(JSON.stringify({ success: true, result: data }));
+        let data = ezandurum()
+        ws.send(JSON.stringify({ ezan: data }));
       } catch (error) {
         console.error("Veri alınamadı:", error);
       }
     }
-  }, 1500);
+  }, 1800);
 
   ws.on('close', () => {
     console.log('Bağlantı kesildi.');
