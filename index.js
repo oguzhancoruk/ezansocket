@@ -19,7 +19,7 @@ function loadData(city) {
 
 
 function ezandurum() {
-
+let dif=0
   const vakitler = ["İmsak", "Güneş", "Öğle", 'İkindi', 'Akşam', "Yatsı"]
   const currentDate = new Date();
   const istanbulDate = new Date(currentDate.toUTCString());
@@ -29,7 +29,7 @@ function ezandurum() {
   const saat = istanbulDate.getHours()+3;
   const dakika = istanbulDate.getMinutes();
   let ezandurum = [];
-  console.log(saat)
+ 
   data.map(res => {
 
     if (formattedDate === res.Tarih) {
@@ -41,7 +41,8 @@ function ezandurum() {
         var liveTotalMinutes = liveHours * 60 + liveMinutes;
         var currentTotalMinutes = saat * 60 + dakika;
         var difference = (currentTotalMinutes-liveTotalMinutes);
-        if (difference >= 0 && difference <= 10) {
+        dif=difference
+        if (difference > 0 && difference <= 10) {
           
          // console.log(difference, "Ezan Okunuyor");
           ezanDurumListesi.push("Ezan Okunuyor"); // Ezan okunuyorsa listeye ekleniyor
@@ -66,7 +67,7 @@ function ezandurum() {
     }
   });
 
-  return genelEzanDurumu
+  return{ genelEzanDurumu,dif}
 }
 
 
