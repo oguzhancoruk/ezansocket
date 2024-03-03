@@ -41,14 +41,17 @@ let dif=0
         var liveTotalMinutes = liveHours * 60 + liveMinutes;
         var currentTotalMinutes = saat * 60 + dakika;
         var difference = (currentTotalMinutes-liveTotalMinutes);
+       
+       if(difference > 0 && difference <= 10){
         dif=difference
+       }
         if (difference > 0 && difference <= 10) {
           
          // console.log(difference, "Ezan Okunuyor");
           ezanDurumListesi.push("Ezan Okunuyor"); // Ezan okunuyorsa listeye ekleniyor
         }
         else {
-          if (difference > 11) {
+          if (difference > 10) {
             ezanDurumListesi.push("Ezan Okundu"); // Ezan okunmadıysa listeye ekleniyor
             //console.log(difference, "Ezan Okundu");
           }
