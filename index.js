@@ -26,9 +26,10 @@ function ezandurum() {
   const formattedDate = `${formatTwoDigitNumber(istanbulDate.getDate())} ${getMonthName(istanbulDate.getMonth())} ${istanbulDate.getFullYear()}`;
   istanbulDate.setHours(istanbulDate.getHours() );
   // const formattedDate = `${istanbulDate.getDate()} ${getMonthName(istanbulDate.getMonth())} ${istanbulDate.getFullYear()}`;
-  const saat = istanbulDate.getHours();
+  const saat = istanbulDate.getHours()+3;
   const dakika = istanbulDate.getMinutes();
   let ezandurum = [];
+  console.log(saat)
   data.map(res => {
 
     if (formattedDate === res.Tarih) {
