@@ -6,14 +6,20 @@ const readXlsxFile = require('read-excel-file/node');
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-const data = require("./data/istanbul.json")
 
 
 
+let data; // Burada genel veriyi saklamak için bir değişken tanımlıyoruz.
+
+function loadData(city) {
+  // Veriyi yüklemek için bir fonksiyon tanımlıyoruz.
+  data = require(`./data/${city}.json`);
+}
 
 
 
 function ezandurum() {
+
   const vakitler = ["İmsak", "Güneş", "Öğle", 'İkindi', 'Akşam', "Yatsı"]
   const currentDate = new Date();
   const istanbulDate = new Date(currentDate.toUTCString());
@@ -34,12 +40,6 @@ function ezandurum() {
         var liveTotalMinutes = liveHours * 60 + liveMinutes;
         var currentTotalMinutes = saat * 60 + dakika;
         var difference = (currentTotalMinutes-liveTotalMinutes);
-     /*    console.log("a1",liveTotalMinutes)
-        console.log("b1",currentTotalMinutes)
-        console.log("dif",difference) */
-        console.log("live",liveHours+":"+liveMinutes)
-        console.log("current",saat+":"+dakika)
-        console.log("DİF",difference )
         if (difference >= 0 && difference <= 10) {
           
          // console.log(difference, "Ezan Okunuyor");
@@ -87,19 +87,20 @@ wss.on('connection', (ws) => {
   console.log('Yeni bir bağlantı kuruldu.');
 
   ws.on('message', (message) => {
-    console.log(`Alınan mesaj: ${message}`);
+  
+    // Gelen mesajı JSON formatına çevirerek işliyoruz.
+  
+    // Eğer gelen mesajın 'city' alanı varsa, bu şehrin verisini yüklüyoruz.
+    if (message) {
+      loadData(message);
+    }
   });
 
   const interval = setInterval(async () => {
-
-
-
-
-
     if (ws.readyState === WebSocket.OPEN) {
       try {
-        let data = ezandurum()
-        ws.send(JSON.stringify({ ezan: data }));
+        let ezanData = ezandurum(); // ezandurum fonksiyonundan veriyi alıyoruz
+        ws.send(JSON.stringify({ ezan: ezanData }));
       } catch (error) {
         console.error("Veri alınamadı:", error);
       }
