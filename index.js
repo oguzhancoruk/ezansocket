@@ -110,7 +110,7 @@ wss.on('connection', (ws) => {
         console.error("Veri alınamadı:", error);
       }
     }
-  }, 1800);
+  }, 5000);
 
   ws.on('close', () => {
     console.log('Bağlantı kesildi.');
