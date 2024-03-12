@@ -29,7 +29,7 @@ let dif=-1
   const saat = istanbulDate.getHours()+3;
   const dakika = istanbulDate.getMinutes();
   let ezandurum = [];
- 
+ console.log(saat)
   data.map(res => {
 
     if (formattedDate === res.Tarih) {
