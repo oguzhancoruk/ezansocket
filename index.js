@@ -29,7 +29,7 @@ let dif=-1
   const saat = istanbulDate.getHours()+3;
   const dakika = istanbulDate.getMinutes();
   let ezandurum = [];
- console.log(saat)
+ 
   data.map(res => {
 
     if (formattedDate === res.Tarih) {
@@ -92,7 +92,7 @@ wss.on('connection', (ws) => {
   console.log('Yeni bir bağlantı kuruldu.');
 
   ws.on('message', (message) => {
-  
+  console.log(message)
     // Gelen mesajı JSON formatına çevirerek işliyoruz.
   
     // Eğer gelen mesajın 'city' alanı varsa, bu şehrin verisini yüklüyoruz.
