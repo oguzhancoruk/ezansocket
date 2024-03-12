@@ -13,6 +13,7 @@ let data; // Burada genel veriyi saklamak için bir değişken tanımlıyoruz.
 
 function loadData(city) {
   // Veriyi yüklemek için bir fonksiyon tanımlıyoruz.
+  console.log(city)
   data = require(`./data/${city}.json`);
 }
 
