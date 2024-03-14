@@ -10,14 +10,110 @@ const wss = new WebSocket.Server({ server });
 
 
 let data; // Burada genel veriyi saklamak için bir değişken tanımlıyoruz.
+let iller = [
+  "adana",
+  "adıyaman",
+  "afyonkarahisar",
+  "ağrı",
+  "aksaray",
+  "amasya",
+  "ankara",
+  "antalya",
+  "ardahan",
+  "artvin",
+  "aydın",
+  "balıkesir",
+  "bartın",
+  "batman",
+  "bayburt",
+  "bilecik",
+  "bingöl",
+  "bitlis",
+  "bolu",
+  "burdur",
+  "bursa",
+  "çanakkale",
+  "çankırı",
+  "çorum",
+  "denizli",
+  "diyarbakır",
+  "düzce",
+  "edirne",
+  "elazığ",
+  "erzincan",
+  "erzurum",
+  "eskisehir",
+  "gaziantep",
+  "giresun",
+  "gümüşhane",
+  "hakkari",
+  "hatay",
+  "ığdır",
+  "ısparta",
+  "istanbul",
+  "izmir",
+  "kahramanmaraş",
+  "karabük",
+  "karaman",
+  "kars",
+  "kastamonu",
+  "kayseri",
+  "kilis",
+  "kırıkkale",
+  "kırklareli",
+  "kırşehir",
+  "kocaeli",
+  "konya",
+  "kütahya",
+  "malatya",
+  "manisa",
+  "mardin",
+  "mersin",
+  "muğla",
+  "muş",
+  "nevşehir",
+  "niğde",
+  "ordu",
+  "osmaniye",
+  "rize",
+  "sakarya",
+  "samsun",
+  "siirt",
+  "sinop",
+  "sivas",
+  "şanlıurfa",
+  "şırnak",
+  "tekirdağ",
+  "tokat",
+  "trabzon",
+  "tunceli",
+  "uşak",
+  "van",
+  "yalova",
+  "yozgat",
+  "zonguldak"
+]
 
 function loadData(city) {
-  // Veriyi yüklemek için bir fonksiyon tanımlıyoruz.
-  console.log(city)
-  data = require(`./data/${city}.json`);
+  // İl adının küçük harfe dönüştürülmesi
+  var str = new TextDecoder().decode(city);
+
+  // İl adının listede olup olmadığının kontrolü
+  if (iller.includes(str)) {
+    // Veriyi yüklemek için bir fonksiyon tanımlıyoruz.
+ 
+    data = require(`./data/${str}.json`);
+    
+    
+  } else {
+    // Eşleşme yoksa bildirim döndürülür
+
+    data= "eşleşme yok"
+   
+    
+  }
 }
-
-
+console.log(data)
 
 function ezandurum() {
 let dif=-1
@@ -30,8 +126,8 @@ let dif=-1
   const saat = istanbulDate.getHours()+3;
   const dakika = istanbulDate.getMinutes();
   let ezandurum = [];
- 
-  data.map(res => {
+ if(data!="eşleşme yok"){
+  data?.map(res => {
 
     if (formattedDate === res.Tarih) {
       let ezanDurumListesi = []; // Her bir ezan zamanı için durum listesi oluşturuluyor
@@ -61,6 +157,8 @@ let dif=-1
       ezandurum.push(ezanDurumListesi); // Her bir vakit için ezan durumu listesi ana diziye ekleniyor
     }
   });
+ }
+  
 
   // Tüm ezan durumlarını kontrol ederek genel durumu belirleme
   let genelEzanDurumu = "Ezan Okundu";
@@ -72,7 +170,7 @@ let dif=-1
   });
 
   return{ genelEzanDurumu,dif}
-}
+} 
 
 
 
@@ -92,18 +190,26 @@ function getMonthName(monthIndex) {
 wss.on('connection', (ws) => {
   console.log('Yeni bir bağlantı kuruldu.');
 
+  let cityExists = false; // Gelen şehrin listede olup olmadığını kontrol etmek için bir değişken
+
   ws.on('message', (message) => {
-  console.log(message)
     // Gelen mesajı JSON formatına çevirerek işliyoruz.
+    var str = new TextDecoder().decode(message);
   
     // Eğer gelen mesajın 'city' alanı varsa, bu şehrin verisini yüklüyoruz.
-    if (message) {
+    if (iller.includes(str)) {
       loadData(message);
+      cityExists = true; // Şehir listede bulunduğu için true olarak işaretliyoruz
+    } else {
+      // Eğer şehir listede yoksa, sokete mesaj gönderme ve interval çalışmasını durdurma.
+      console.log("İstek yapılan şehir listede bulunmuyor.");
+      cityExists = false; // Şehir listede bulunmadığı için false olarak işaretliyoruz
     }
   });
+  
 
-  const interval = setInterval(async () => {
-    if (ws.readyState === WebSocket.OPEN) {
+  const  interval  = setInterval(async () => {
+    if (ws.readyState === WebSocket.OPEN && cityExists) { // Şehir listede varsa ve soket açıksa interval çalışır
       try {
         let ezanData = ezandurum(); // ezandurum fonksiyonundan veriyi alıyoruz
         ws.send(JSON.stringify({ ezan: ezanData }));
