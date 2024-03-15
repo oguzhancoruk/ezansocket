@@ -5,9 +5,9 @@ const readXlsxFile = require('read-excel-file/node');
 const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
+const cors = require('cors'); // CORS modülü ekleniyor
 
-
-
+app.use(cors());
 const io = socketIo(server);
 let data; // Burada genel veriyi saklamak için bir değişken tanımlıyoruz.
 let iller = [
@@ -108,7 +108,7 @@ function loadData(city) {
   } else {
     // Eşleşme yoksa bildirim döndürülür
 
-    data= "eşleşme yok"
+    data= "eşleşme yok"/* æ */
    
     
   }
