@@ -8,6 +8,10 @@ const server = http.createServer(app);
 const cors = require('cors'); // CORS modülü ekleniyor
 
 app.use(cors());
+
+app.use(cors({
+  origin: 'https://test.cloudmedia.com.tr' // Sadece bu kaynaktan gelen isteklere izin ver
+}));
 const io = socketIo(server);
 let data; // Burada genel veriyi saklamak için bir değişken tanımlıyoruz.
 let iller = [
