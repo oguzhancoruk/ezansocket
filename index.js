@@ -2,13 +2,13 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const readXlsxFile = require('read-excel-file/node');
-
+const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
 
 
 
+const io = socketIo(server);
 let data; // Burada genel veriyi saklamak için bir değişken tanımlıyoruz.
 let iller = [
   "adana",
@@ -42,7 +42,7 @@ let iller = [
   "elazığ",
   "erzincan",
   "erzurum",
-  "eskisehir",
+  "eskişehir",
   "gaziantep",
   "giresun",
   "gümüşhane",
@@ -96,13 +96,13 @@ let iller = [
 
 function loadData(city) {
   // İl adının küçük harfe dönüştürülmesi
-  var str = new TextDecoder().decode(city);
+  
 
   // İl adının listede olup olmadığının kontrolü
-  if (iller.includes(str)) {
+  if (iller.includes(city)) {
     // Veriyi yüklemek için bir fonksiyon tanımlıyoruz.
  
-    data = require(`./data/${str}.json`);
+    data = require(`./data/${city}.json`);
     
     
   } else {
@@ -187,44 +187,36 @@ function getMonthName(monthIndex) {
   ];
   return months[monthIndex];
 }
-wss.on('connection', (ws) => {
+io.on('connection', (socket) => {
   console.log('Yeni bir bağlantı kuruldu.');
 
-  let cityExists = false; // Gelen şehrin listede olup olmadığını kontrol etmek için bir değişken
-
-  ws.on('message', (message) => {
-    // Gelen mesajı JSON formatına çevirerek işliyoruz.
-    var str = new TextDecoder().decode(message);
-  
-    // Eğer gelen mesajın 'city' alanı varsa, bu şehrin verisini yüklüyoruz.
-    if (iller.includes(str)) {
-      loadData(message);
-      cityExists = true; // Şehir listede bulunduğu için true olarak işaretliyoruz
+  socket.on('subscribe', (city) => {
+    if (iller.includes(city)) {
+      // İlgili il kanalına abone ol
+      socket.join(city);
+      // İl verisini yükle
+      loadData(city);
     } else {
-      // Eğer şehir listede yoksa, sokete mesaj gönderme ve interval çalışmasını durdurma.
       console.log("İstek yapılan şehir listede bulunmuyor.");
-      cityExists = false; // Şehir listede bulunmadığı için false olarak işaretliyoruz
     }
   });
-  
 
-  const  interval  = setInterval(async () => {
-    if (ws.readyState === WebSocket.OPEN && cityExists) { // Şehir listede varsa ve soket açıksa interval çalışır
-      try {
-        let ezanData = ezandurum(); // ezandurum fonksiyonundan veriyi alıyoruz
-        ws.send(JSON.stringify({ ezan: ezanData }));
-      } catch (error) {
-        console.error("Veri alınamadı:", error);
-      }
-    }
-  }, 5000);
-
-  ws.on('close', () => {
+  socket.on('disconnect', () => {
     console.log('Bağlantı kesildi.');
-    clearInterval(interval);
   });
 });
 
+// Her 5 saniyede bir ezan durumunu gönder
+setInterval(() => {
+  iller.forEach(city => {
+    loadData(city);
+    if (data !== "eşleşme yok") {
+      let ezanData = ezandurum();
+      io.to(city).emit('ezan',{ezanData,city});
+    }
+  });
+}, 5000);
+
 server.listen(9002, () => {
-  console.log('Sunucu 9001 portunda çalışıyor.');
+  console.log('Sunucu 9002 portunda çalışıyor.');
 });
