@@ -91,7 +91,7 @@ async function ezandurum(data) {
     }
   });
 
-  return { genelEzanDurumu, dif, data };
+  return { genelEzanDurumu, dif};
 }
 
 function formatTwoDigitNumber(number) {
@@ -180,3 +180,5 @@ async function openChannel(city) {
 server.listen(9002, () => {
   console.log('Sunucu 9001 portunda çalışıyor.');
 });
+
+
