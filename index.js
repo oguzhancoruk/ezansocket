@@ -173,7 +173,7 @@ async function openChannel(city) {
       } catch (error) {
         console.error("Veri alınamadı:", error);
       }
-    }, 1000*60);
+    }, 1000*62);
   }
 }
 
