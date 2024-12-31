@@ -36,4 +36,4 @@ async function getSpecificRow(ezanDate) {
   }
 }
 
-getSpecificRow("30 Aralık 2024");
+getSpecificRow("30 Aralık 2025");
